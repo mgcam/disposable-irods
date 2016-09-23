@@ -1,18 +1,29 @@
 #!/bin/bash
 
-set -e -x
+# set -e -x
+set -x
 
 IRODS_VERSION=${IRODS_VERSION:=4.1.9}
-IRODS_RIP_DIR=/opt/renci/irods-3.3.1
 
 install_common() {
     sudo apt-get install -qq odbc-postgresql unixodbc-dev
 }
 
 install_3_3_1() {
-    mkdir -p ${IRODS_RIP_DIR}
-    cd ${IRODS_RIP_DIR}
-    tar xfz /tmp/irods-3.3.1.tar.gz
+    cp ./config/odbc.ini $HOME/.odbc.ini
+
+    vault_path=$PWD/irods-legacy/iRODS/Vault
+    mkdir -p $vault_path
+
+    sed -i.bak -e "s#__VAULT__#$vault_path#" ./config/irodssetup.in
+    sed -i.bak -e 's/i386-linux-gnu/x86_64-linux-gnu/' ./irods-legacy/iRODS/scripts/perl/utils_platform.pl
+
+    cd ./irods-legacy/iRODS
+    ./irodssetup < ../../config/irodssetup.in
+    ./irodsctl stop
+
+    export CFLAGS=-fPIC
+    make
 }
 
 install_4_1_x() {

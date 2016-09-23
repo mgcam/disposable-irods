@@ -14,7 +14,7 @@ before_install_common() {
 }
 
 before_install_3_3_1() {
-    wget ${WTSI_NPG_GITHUB_URL}/irods-legacy/releases/download/3.3.1-travis-bc85aa/irods.tar.gz
+    git clone ${WTSI_NPG_GITHUB_URL}/irods-legacy-gclp irods-legacy
 }
 
 before_install_4_1_x() {

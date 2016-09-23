@@ -15,6 +15,9 @@ env:
     - RENCI_FTP_URL=ftp://ftp.renci.org
     - WTSI_NPG_GITHUB_URL=https://github.com/wtsi-npg
     - PG_PLUGIN_VERSION=1.9
+
+  matrix:
+    - IRODS_VERSION=3.3.1
     - IRODS_VERSION=4.1.9
 
 before_install:
@@ -27,6 +30,8 @@ before_script:
   - ./scripts/configure.sh
 
 script:
+  - export PATH=$TRAVIS_BUILD_DIR/irods-legacy/iRODS/clients/icommands/bin:$PATH
   - ienv
   - ilsresc -l
   - ils
+

@@ -8,6 +8,14 @@ configure_common() {
     return
 }
 
+configure_3_3_1() {
+    # The iRODS 3.3.1 setup script has created the irods user, the
+    # irods database user and ICAT database already.
+    cd ./irods-legacy/iRODS
+    ./irodsctl restart
+    return
+}
+
 configure_4_1_x() {
     sudo -E -u postgres createuser -D -R -S irods
     sudo -E -u postgres createdb -O irods ICAT
