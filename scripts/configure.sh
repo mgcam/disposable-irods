@@ -13,7 +13,15 @@ configure_3_3_1() {
     # irods database user and ICAT database already.
     cd ./irods-legacy/iRODS
     ./irodsctl restart
-    return
+
+    export PATH=$PWD/clients/icommands/bin:$PATH
+
+    test_resource=testResc
+    test_vault=./irods-legacy/iRODS/Test
+
+    mkdir -p $test_vault
+    iadmin mkresc testResc 'unix file system' cache `hostname --fqdn` $test_vault
+    iadmin asq 'select alias,sqlStr from R_SPECIFIC_QUERY where alias = ?' findQueryByAlias
 }
 
 configure_4_1_x() {
@@ -27,8 +35,8 @@ configure_4_1_x() {
     sudo /etc/init.d/irods restart
 
     test_resource=testResc
-    test_password=testpass
     test_vault=/var/lib/irods/iRODS/Test
+    test_password=testpass
 
     sudo -E su irods -c "mkdir -p $test_vault"
     sudo -E su irods -c "iadmin mkresc unixfs unixfilesystem `hostname --fqdn`:$test_vault"
