@@ -1,0 +1,19 @@
+
+language:
+  bash
+
+addons:
+  postgresql: "9.3"
+
+env:
+  global:
+    - PGVERSION="9.3"
+    - PLATFORM=ubuntu12
+    - ARCH=x86_64
+    - RENCI_FTP_URL=ftp://ftp.renci.org
+    - WTSI_NPG_GITHUB_URL=https://github.com/wtsi-npg
+    - PG_PLUGIN_VERSION=1.9
+    - IRODS_VERSION=4.1.9
+
+script:
+  - ./scripts/download_and_verify.sh
