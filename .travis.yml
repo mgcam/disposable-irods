@@ -1,4 +1,6 @@
 
+sudo: required
+
 language:
   bash
 
@@ -15,5 +17,11 @@ env:
     - PG_PLUGIN_VERSION=1.9
     - IRODS_VERSION=4.1.9
 
-script:
+before_install:
   - ./scripts/download_and_verify.sh
+
+install:
+  - ./scripts/install.sh
+
+script:
+  - ./bin/true
