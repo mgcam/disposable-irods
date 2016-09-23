@@ -23,5 +23,10 @@ before_install:
 install:
   - ./scripts/install.sh
 
+before_script:
+  - ./scripts/configure.sh
+
 script:
-  - ./bin/true
+  - ienv
+  - ilsresc -l
+  - ils
