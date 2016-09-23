@@ -18,10 +18,13 @@ before_install_3_3_1() {
 }
 
 before_install_4_1_x() {
-    wget ${RENCI_FTP_URL}/pub/irods/releases/${IRODS_VERSION}/${PLATFORM}/irods-icat-${IRODS_VERSION}-${PLATFORM}-${ARCH}.deb
     wget ${RENCI_FTP_URL}/pub/irods/releases/${IRODS_VERSION}/${PLATFORM}/irods-database-plugin-postgres-${PG_PLUGIN_VERSION}-${PLATFORM}-${ARCH}.deb
-    wget ${RENCI_FTP_URL}/pub/irods/releases/${IRODS_VERSION}/${PLATFORM}/irods-runtime-${IRODS_VERSION}-${PLATFORM}-${ARCH}.deb
     wget ${RENCI_FTP_URL}/pub/irods/releases/${IRODS_VERSION}/${PLATFORM}/irods-dev-${IRODS_VERSION}-${PLATFORM}-${ARCH}.deb
+    wget ${RENCI_FTP_URL}/pub/irods/releases/${IRODS_VERSION}/${PLATFORM}/irods-icat-${IRODS_VERSION}-${PLATFORM}-${ARCH}.deb
+    wget ${RENCI_FTP_URL}/pub/irods/releases/${IRODS_VERSION}/${PLATFORM}/irods-icommands-${IRODS_VERSION}-${PLATFORM}-${ARCH}.deb
+    wget ${RENCI_FTP_URL}/pub/irods/releases/${IRODS_VERSION}/${PLATFORM}/irods-runtime-${IRODS_VERSION}-${PLATFORM}-${ARCH}.deb
+
+    sha256sum -c ./checksums/packages.sha256
 }
 
 case $IRODS_VERSION in
