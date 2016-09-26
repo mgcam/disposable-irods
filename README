@@ -1,0 +1,61 @@
+
+This repository contains scripts to aid in setting up tests that
+require a minimal functioning iRODS installation. (Minimal meaning
+that the ICAT database server, iRODS server and disk resource all
+reside on localhost.) The iRODS server will expect a pre-configured
+PostgreSQL server to be available on localhost.
+
+These scripts set up a clean, throwaway iRODS instance suitable for
+running basic tests.
+
+Versions of iRODS supported:
+
+3.3.1 (run-in-place) - Built and installed from git a repository.
+4.1.9 (packaged)     - Installed from the official RENCI FTP site.
+
+A version 3.3.1 installation will be in local directory owned by the
+current user. WARNING! The installation script supplied with iRODS
+3.3.1 will make modifications to that user's $HOME/.odbc.ini. A
+version 4.1.9 installation will be in the location defined by the
+package.
+
+In all cases the current user will have been given an active rodsamin
+account, set up for passwordless login to iRODS using iinit.
+
+
+The scripts supplied are:
+
+./scripts/download_and_verify_irods.sh
+
+    Downloads source or packages as appropriate and makes such
+    verification checks as are available.
+
+./scripts/install_irods.sh
+
+    Builds source or installs packages.
+
+./scripts/configure_irods.sh
+
+    Configures an iRODS admin user with a default password for
+    testing.
+
+
+The script behaviour may be modified by setting environment variables.
+The most important variable, relevant to both iRODS 3.3.1 and 4.1.9
+is:
+
+IRODS_VERSION        The iRODS version to install:
+                     3.3.1, 4.1.9 (default)
+
+Relevant to 4.1.9 packaged install only are:
+
+PG_PLUGIN_VERSION    The iRODS PostgeSQL plugin version to install:
+                     1.19 (default)
+
+PLATFORM             The RENCI name for the host platform:
+                     ubuntu12 (default)
+
+RENCI_FTP_URL        The RENCI FTP site:
+                     ftp://ftp.renci.org (default)
+
+

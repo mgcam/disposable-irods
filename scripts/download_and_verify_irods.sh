@@ -8,13 +8,14 @@ ARCH=x86_64
 
 RENCI_FTP_URL=${RENCI_FTP_URL:=ftp://ftp.renci.org}
 WTSI_NPG_GITHUB_URL=${WTSI_NPG_GITHUB_URL:=https://github.com/wtsi-npg}
+WTSI_NPG_GITHUB_REPO=${WTSI_NPG_GITHUB_REPO:=irods-legacy-gclp}
 
 before_install_common() {
     echo sudo apt-get update -qq
 }
 
 before_install_3_3_1() {
-    git clone ${WTSI_NPG_GITHUB_URL}/irods-legacy-gclp irods-legacy
+    git clone ${WTSI_NPG_GITHUB_URL}/${WTSI_NPG_GITHUB_REPO} irods-legacy
 }
 
 before_install_4_1_x() {

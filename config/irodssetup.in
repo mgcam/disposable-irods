@@ -14,7 +14,7 @@ demoResc
 __VAULT__
 no
 postgres
-/usr/lib/postgresql/9.3
+__POSTGRES_HOME__
 yes
 irods
 irods

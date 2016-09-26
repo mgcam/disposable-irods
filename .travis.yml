@@ -21,13 +21,13 @@ env:
     - IRODS_VERSION=4.1.9
 
 before_install:
-  - ./scripts/download_and_verify.sh
+  - ./scripts/download_and_verify_irods.sh
 
 install:
-  - ./scripts/install.sh
+  - ./scripts/install_irods.sh
 
 before_script:
-  - ./scripts/configure.sh
+  - ./scripts/configure_irods.sh
 
 script:
   - export PATH=$TRAVIS_BUILD_DIR/irods-legacy/iRODS/clients/icommands/bin:$PATH

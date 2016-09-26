@@ -1,0 +1,390 @@
+#!/bin/bash
+#
+# Copyright (C) 2014 Genome Research Limited. All Rights Reserved.
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the Perl Artistic License or the GNU General
+# Public License as published by the Free Software Foundation, either
+# version 3 of the License, or (at your option) any later version.
+
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# Author: Keith James
+
+DEBUG=1
+
+# The PostgreSQL home directory
+PGHOME=${PGHOME:=$PGHOME}
+# The PostgreSQL data directory
+PGDATA=${PGDATA:=$PGHOME/data}
+# The PostgreSQL PID file
+PGPID=$PGDATA/postmaster.pid
+# The postgresql.conf file, which may be relocated e.g. on Debian
+PGARGS=
+if [ $PGCONF ]
+then
+    PGARGS="-o \"-cconfig_file=${PGCONF}\""
+fi
+
+# The PostgreSQL programs
+PGCREATE=${PGCREATE:=createdb}
+PGDROP=${PGDROP:=dropdb}
+PGDUMP=${PGDUMP:=pg_dump}
+PGCTL=${PGCTL:=pg_ctl}
+PSQL=${PSQL:=psql}
+
+# The PostgreSQL connection details
+PGHOST=${PGHOST:=localhost}
+PGPORT=${PGPORT:=5432}
+PGUSER=${PGUSER:=$USER}
+# Use PGPASSWORD to supply the PostgreSQL password
+PGDATABASE=${PGDATABASE:=ICAT}
+
+PGCOMMON="--host $PGHOST --port $PGPORT --username $PGUSER"
+
+ICAT_CLEAN=${ICAT_CLEAN:=icat_clean.sql}
+ICAT_DIRTY=${ICAT_DIRTY:=icat_dirty.sql}
+
+# The iRODS home directory
+IRODS_HOME=${IRODS_HOME:=/usr/local/irods}
+IRODS_PORT=${IRODS_PORT:=1247}
+IRODS_ZONE=${IRODS_ZONE:=tempZone}
+IRODS_RESC=${IRODS_RESC:=tempResc}
+IRODS_USER=${IRODS_USER:=irods}
+IRODS_AUTH=${IRODS_AUTH:=irods_auth.dat}
+
+# The iRODS server program
+IRODS_BIN=$IRODS_HOME/server/bin
+IRODS_SERVER=irodsServer
+IRODS_PID=/tmp/irodsServer.$IRODS_PORT
+IRODS_CONF=${IRODS_CONF:=$(pwd)/irods_env.conf}
+
+postgresql_connect() {
+    [[ $DEBUG ]] && echo "DEBUG: echo '\q' | $PSQL --port $PGPORT"
+    echo '\q' | $PSQL
+}
+
+postgresql_running() {
+    [[ $DEBUG ]] && echo "DEBUG: $PGCTL --pgdata $PGDATA status | grep 'PID'"
+    $PGCTL $PGARGS --pgdata $PGDATA status | grep 'PID'
+}
+
+start_postgresql() {
+    if postgresql_running
+    then
+        echo "Cannot start PostgreSQL; already running"
+        return 1
+    else
+        echo "Starting PostgreSQL"
+        [[ $DEBUG ]] && echo "DEBUG: $PGCTL $PGARGS --pgdata $PGDATA -w start"
+        $PGCTL --pgdata $PGDATA -w start
+    fi
+}
+
+stop_postgresql() {
+    if postgresql_running
+    then
+        echo "Stopping PostgreSQL"
+        [[ $DEBUG ]] && echo "DEBUG: $PGCTL --pgdata $PGDATA stop"
+        $PGCTL --pgdata $PGDATA stop
+    else
+        echo "Cannot stop PostgreSQL; not running"
+        return 1
+    fi
+}
+
+setup_database() {
+    if postgresql_running
+    then
+        echo "Creating clean ICAT database" $PGDATABASE
+        [[ $DEBUG ]] && echo "DEBUG: $PGCREATE $PGCOMMON --encoding UTF-8 $PGDATABASE"
+        $PGCREATE $PGCOMMON --encoding UTF-8 $PGDATABASE
+
+        echo "Populating ICAT database from" $ICAT_CLEAN
+        [[ $DEBUG ]] && echo "DEBUG: $PSQL $PGCOMMON --quiet $PGDATABASE < $ICAT_CLEAN"
+        $PSQL $PGCOMMON --quiet $PGDATABASE < $ICAT_CLEAN
+    else
+        "Cannot setup database; cannot connect to PostgreSQL"
+        return 1
+    fi
+}
+
+teardown_database() {
+    if postgresql_connect
+    then
+        echo "Dumping dirty ICAT database" $PGDATABASE "to" $ICAT_DIRTY
+        [[ $DEBUG ]] && echo "DEBUG: $PGDUMP $PGCOMMON --encoding UTF-8 --no-privileges --format p --file $ICAT_DIRTY $PGDATABASE"
+        $PGDUMP $PGCOMMON --encoding UTF-8 --no-privileges --format p --file $ICAT_DIRTY $PGDATABASE
+
+        echo "Destroying dirty ICAT database" $PGDATABASE
+        [[ $DEBUG ]] && echo "DEBUG: $PGDROP $PGCOMMON $PGDATABASE"
+        $PGDROP $PGCOMMON $PGDATABASE
+    else
+        "Cannot teardown database; unable to connect"
+        return 1
+    fi
+}
+
+write_irods_conf() {
+    local conf=$1
+    local port=$2
+    local zone=$3
+    local resc=$4
+    local user=$5
+    local auth=$6
+
+    [[ $DEBUG ]] && echo "DEBUG: Writing iRODS configuration $conf"
+
+    echo "irodsHost 'localhost'"          > $conf
+    echo "irodsPort $port"               >> $conf
+    echo "irodsDefResource '$resc'"      >> $conf
+    echo "irodsHome '/$zone/home/$user'" >> $conf
+    echo "irodsUserName '$user'"         >> $conf
+    echo "irodsZone '$zone'"             >> $conf
+    echo "irodsAuthFileName '$auth'"     >> $conf
+}
+
+irods_running() {
+    if [[ -e $IRODS_PID ]]
+    then
+        local pid=`sed -e 's/\([0-9]*\).*/\1/' < $IRODS_PID`
+        ps -p $pid > /dev/null
+    else
+        return 1
+    fi
+}
+
+start_irods() {
+    local conf=$1
+
+    if irods_running
+    then
+        echo "Cannot start iRODS; already running"
+    else
+        echo "Starting iRODS with" $conf
+
+        # Set up the iRODS server
+        [[ $DEBUG ]] && echo "DEBUG: cd $IRODS_HOME/server/bin ; ./$IRODS_SERVER"
+
+        export irodsEnvFile=$conf
+        cd $IRODS_HOME/server/bin
+        ./$IRODS_SERVER
+    fi
+}
+
+stop_irods() {
+    local conf=$1
+
+    if irods_running
+    then
+        echo "Stopping iRODS with" $conf
+        local pid=`sed -e 's/\([0-9]*\).*/\1/' < $IRODS_PID`
+        echo "Killing iRODS server process group" $pid
+
+        kill -SIGINT -$pid
+
+        /bin/rm $conf
+    else
+        echo "Cannot stop iRODS; not running"
+    fi
+}
+
+istart() {
+    write_irods_conf $IRODS_CONF $IRODS_PORT $IRODS_ZONE $IRODS_RESC $IRODS_USER $IRODS_AUTH
+    start_irods $IRODS_CONF
+
+    local ret=$?
+    [ $ret -eq 0 ] || echo "Failed to start iRODS"
+
+    return $ret
+}
+
+istop() {
+    stop_irods $IRODS_CONF
+
+    local ret=$?
+    [ $ret -eq 0 ] || echo "Failed to stop iRODS"
+
+    return $ret
+}
+
+pstart() {
+    start_postgresql
+
+    local ret=$?
+    [ $ret -eq 0 ] || echo "Failed to start PostgreSQL"
+
+    return $ret
+}
+
+pstop() {
+    stop_postgresql
+
+    local ret=$?
+    [ $ret -eq 0 ] || echo "Failed to stop PostgreSQL"
+
+    return $ret
+}
+
+psetup() {
+    setup_database
+}
+
+pteardown() {
+    teardown_database
+}
+
+start() {
+    echo "Starting ..."
+    pstart
+    istart
+}
+
+stop() {
+    echo "Stopping ..."
+    istop
+    pstop
+}
+
+status() {
+    if postgresql_running
+    then
+        echo "PostgreSQL is running on port" $PGPORT
+    else
+        echo "PostgreSQL is not running"
+    fi
+
+    if irods_running
+    then
+        echo "iRODS is running on port" $IRODS_PORT
+    else
+        echo "iRODS is not running"
+    fi
+}
+
+restart() {
+    echo "Restarting ..."
+    stop
+    start
+}
+
+setup() {
+    echo "Setup ..."
+    psetup && istart
+}
+
+teardown() {
+    echo "Teardown ..."
+    istop
+    pteardown
+}
+
+case "$1" in
+    start)
+        start
+        ;;
+
+    istart)
+        istart
+        ;;
+
+    pstart)
+        pstart
+        ;;
+
+    stop)
+        stop
+        ;;
+
+    istop)
+        istop
+        ;;
+
+    pstop)
+        pstop
+        ;;
+
+    status)
+        status
+        ;;
+
+    restart)
+        restart
+        ;;
+
+    psetup)
+        psetup
+        ;;
+
+    setup)
+        setup
+        ;;
+
+    pteardown)
+        pteardown
+        ;;
+
+    teardown)
+        teardown
+        ;;
+    *)
+        cat <<EOF
+
+Start and stop PostgreSQL and iRODS servers with custom settings and
+ICAT database, particularly for testing.
+
+ Usage: { start | stop | restart | status | setup | teardown |
+          pstart | pstop | psetup | pteardown
+          istart | istop }
+
+  start:     Start ICAT, start iRODS
+  stop:      Stop iRODS, stop PostreSQL
+  restart:   stop, start
+  status:    Report status
+
+  setup:     Load ICAT, start iRODS
+  teardown:  Stop iRODS, dump ICAT
+
+  istart:    Start iRODS
+  istop:     Stop iRODS
+
+  pstart:    Start PostgreSQL
+  pstop:     Stop PostgreSQL
+
+  psetup:    Load ICAT
+  pteardown: Dump ICAT
+
+To start iRODS using an existing ICAT database, use the { start, stop,
+restart } operations.
+
+To create a new, clean ICAT database from a PostgreSQL dump file on
+startup and save the modified database to a new dump file on shutdown,
+use the { setup, teardown } operations.
+
+
+  The following variables may be set, [defaults are in brackets]:
+
+  PGHOME     : The PostgreSQL home directory [/usr/local/postgres]
+  PGHOST     : The PostgreSQL host           [localhost]
+  PGPORT     : The PostgreSQL port           [5432]
+  PGUSER     : The PostgreSQL user           [$USER]
+
+  PGDATABASE : The PostgreSQL ICAT database         [test]
+  INDUMP     : The clean ICAT database dump to load [icat_clean.sql]
+  OUTDUMP    : The dirty ICAT database dump to make [icat dirty.sql]
+
+  IRODS_HOME : The iRODS home directory                 [/usr/local/irods]
+  IRODS_PORT : The iRODS server port                    [1247]
+  IRODS_ZONE : The iRODS zone name                      [tempZone]
+  IRODS_RESC : The iRODS default resource               [tempResc]
+  IRODS_USER : The iRODS user                           [irods]
+  IRODS_CONF : The iRODS server configuration file name [irods_env.conf]
+EOF
+        exit 1
+        ;;
+esac
+
+exit $?

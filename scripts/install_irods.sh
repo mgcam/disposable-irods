@@ -1,9 +1,11 @@
 #!/bin/bash
 
-# set -e -x
-set -x
+set -e -x
 
 IRODS_VERSION=${IRODS_VERSION:=4.1.9}
+
+PGHOME=${PGHOME:=/usr/lib/postgresql}
+PGVERSION=${PGVERSION:=9.3}
 
 install_common() {
     sudo apt-get install -qq odbc-postgresql unixodbc-dev
@@ -12,9 +14,11 @@ install_common() {
 install_3_3_1() {
     cp ./config/odbc.ini $HOME/.odbc.ini
 
+    postgres_home=${PGHOME}/${PGVERSION}
     vault_path=$PWD/irods-legacy/iRODS/Vault
     mkdir -p $vault_path
 
+    sed -i.bak -e "s#__POSTGRES_HOME__#$postgres_home#" ./config/irodssetup.in
     sed -i.bak -e "s#__VAULT__#$vault_path#" ./config/irodssetup.in
     sed -i.bak -e 's/i386-linux-gnu/x86_64-linux-gnu/' ./irods-legacy/iRODS/scripts/perl/utils_platform.pl
 
@@ -22,7 +26,9 @@ install_3_3_1() {
     ./irodssetup < ../../config/irodssetup.in
     ./irodsctl stop
 
+    # Rebuild with -fPIC for libRodsAPI.a
     export CFLAGS=-fPIC
+    make clean
     make
 }
 
