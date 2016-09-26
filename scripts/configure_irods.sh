@@ -51,7 +51,7 @@ configure_4_1_x() {
     sed -e "s#__USER__#$USER#" -e "s#__HOME__#$HOME#" < ./config/irods_environment.json > $HOME/.irods/irods_environment.json
     cat $HOME/.irods/irods_environment.json
 
-    echo $test_password | script -q -c "iinit"
+    echo $test_password | script -q -c "iinit" /dev/null
 }
 
 case $IRODS_VERSION in
