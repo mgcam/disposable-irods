@@ -2,9 +2,13 @@
 
 set -e -x
 
-IRODS_VERSION=${IRODS_VERSION:=4.1.9}
+BUILD_DIR=${BUILD_DIR:=$PWD}
+
+ARCH=${ARCH:=x86_64}
 PLATFORM=${PLATFORM:=ubuntu12}
-ARCH=x86_64
+
+IRODS_VERSION=${IRODS_VERSION:=4.1.9}
+IRODS_RIP_DIR=${IRODS_RIP_DIR:=/usr/local/irods}
 
 RENCI_FTP_URL=${RENCI_FTP_URL:=ftp://ftp.renci.org}
 WTSI_NPG_GITHUB_URL=${WTSI_NPG_GITHUB_URL:=https://github.com/wtsi-npg}
@@ -15,7 +19,9 @@ before_install_common() {
 }
 
 before_install_3_3_1() {
-    git clone ${WTSI_NPG_GITHUB_URL}/${WTSI_NPG_GITHUB_REPO} irods-legacy
+    sudo mkdir -p ${IRODS_RIP_DIR}
+    sudo chown -R $USER:$USER ${IRODS_RIP_DIR}
+    git clone ${WTSI_NPG_GITHUB_URL}/${WTSI_NPG_GITHUB_REPO} ${IRODS_RIP_DIR}
 }
 
 before_install_4_1_x() {
@@ -24,7 +30,7 @@ before_install_4_1_x() {
     wget ${RENCI_FTP_URL}/pub/irods/releases/${IRODS_VERSION}/${PLATFORM}/irods-icat-${IRODS_VERSION}-${PLATFORM}-${ARCH}.deb
     wget ${RENCI_FTP_URL}/pub/irods/releases/${IRODS_VERSION}/${PLATFORM}/irods-runtime-${IRODS_VERSION}-${PLATFORM}-${ARCH}.deb
 
-    sha256sum -c ./checksums/packages.sha256
+    sha256sum -c ${BUILD_DIR}/checksums/packages.sha256
 }
 
 case $IRODS_VERSION in

@@ -11,15 +11,12 @@ env:
   global:
     - secure: gbaofc4x+nQ4SbragL+jmyXdhnt1NY9mY6W8n5qrFsR5NSEN9EWOkVGlNwi8ByQo6gSLuekzA5wXgvQe8qUHulc80GOri+vz0wk8D16Su00eOUsLn0wEPAOja06NRNLc72yU9qbySOh2ONKpSb8Xlp27c6SK0SbmB3PzWlJGvuxziH0TpyjYoRAeeIB+rBlWyJlaCPU+Rp+LsNCuUlaR/HCkEfoP4wWY062V467Fh6S9ymAO55ylNitSFl8yYOkEAFIU4dTbOrgOKIva62gDKrZdBjDXC9DPcPdE3zj0ltUaMWAsQE1uWiRoBGIfwU9rU4akKEUkx93wcvS2ReaXcAI1waRGY8WUMy0UjG7QmOK22GxSRGApG7C41q/caJJfgt6th8P8Vn79piC0K26r4RZ8l/yLKUEed8txnKNQsevc+qepNgCQGhvTRdWiYj/Y/q45ownejkgGLPzqwQhYlGQ+B3VzT7DY1sw/7o5PmY1SXahedRB9gfIjQFkg6rw9gDCAD0qUh6afYqcy6OEx7bosUTXxhAPTOfiPUGX7bgjb5ib1mfWNNcfK7AREt358WkO+BuiOe8AfEo6c0gZ9gZoliRwNbqti3KEdWTkk5FmPky4MkRc39HezE71MhELBG+hiZMwTXz+wsYRp/yL5bdQsjWPB8AHGa+6mTTrXaTI=
     - PGVERSION="9.3"
-    - PLATFORM=ubuntu12
-    - ARCH=x86_64
     - RENCI_FTP_URL=ftp://ftp.renci.org
     - WTSI_NPG_GITHUB_URL=https://github.com/wtsi-npg
-    - PG_PLUGIN_VERSION=1.9
 
   matrix:
-    - IRODS_VERSION=3.3.1
-    - IRODS_VERSION=4.1.9
+    - IRODS_VERSION=3.3.1 IRODS_RIP_DIR=/usr/local/irods
+    - IRODS_VERSION=4.1.9 PG_PLUGIN_VERSION=1.9 PLATFORM=ubuntu12
 
 before_install:
   - ./scripts/download_and_verify_irods.sh
@@ -31,7 +28,7 @@ before_script:
   - ./scripts/configure_irods.sh
 
 script:
-  - export PATH=$TRAVIS_BUILD_DIR/irods-legacy/iRODS/clients/icommands/bin:$PATH
+  - export PATH=$IRODS_RIP_DIR/iRODS/clients/icommands/bin:$PATH
   - ienv
   - ilsresc -l
   - ils

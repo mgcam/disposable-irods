@@ -22,6 +22,17 @@ package.
 In all cases the current user will have been given an active rodsamin
 account, set up for passwordless login to iRODS using iinit.
 
+As some systems may require more than the single default iRODS
+resource to be available, an additional resource is added
+automatically at install time. These are
+
+3.3.1 - a resource named 'testResc' with a vault at
+        ${IRODS_RIP_DIR}/iRODS/TestVault (see below for the definition
+        of 'IRODS_RIP_DIR').
+
+4.1.9 - a resource named 'testResc' with a vault at
+        /var/lib/irods/iRODS/TestVault
+
 
 The scripts supplied are:
 
@@ -46,6 +57,13 @@ is:
 
 IRODS_VERSION        The iRODS version to install:
                      3.3.1, 4.1.9 (default)
+
+
+Relevant to 3.3.1 run-in-place install only are:
+
+IRODS_RIP_DIR        A directory to which the run-in-place install will
+                     be relocated.
+
 
 Relevant to 4.1.9 packaged install only are:
 

@@ -2,7 +2,11 @@
 
 set -e -x
 
+BUILD_DIR=${BUILD_DIR:=$PWD}
+
+ARCH=${ARCH:=x86_64}
 IRODS_VERSION=${IRODS_VERSION:=4.1.9}
+IRODS_RIP_DIR=${IRODS_RIP_DIR:=/usr/local/irods}
 
 PGHOME=${PGHOME:=/usr/lib/postgresql}
 PGVERSION=${PGVERSION:=9.3}
@@ -12,18 +16,19 @@ install_common() {
 }
 
 install_3_3_1() {
-    cp ./config/odbc.ini $HOME/.odbc.ini
+    cp ${BUILD_DIR}/config/odbc.ini $HOME/.odbc.ini
 
     postgres_home=${PGHOME}/${PGVERSION}
-    vault_path=$PWD/irods-legacy/iRODS/Vault
+    vault_path=${IRODS_RIP_DIR}/iRODS/Vault
     mkdir -p $vault_path
+    chown -R $USER:$USER $vault_path
 
-    sed -i.bak -e "s#__POSTGRES_HOME__#$postgres_home#" ./config/irodssetup.in
-    sed -i.bak -e "s#__VAULT__#$vault_path#" ./config/irodssetup.in
-    sed -i.bak -e 's/i386-linux-gnu/x86_64-linux-gnu/' ./irods-legacy/iRODS/scripts/perl/utils_platform.pl
+    sed -i.bak -e "s#__POSTGRES_HOME__#$postgres_home#" ${BUILD_DIR}/config/irodssetup.in
+    sed -i.bak -e "s#__VAULT__#$vault_path#" ${BUILD_DIR}/config/irodssetup.in
+    sed -i.bak -e 's/i386-linux-gnu/x86_64-linux-gnu/' ${IRODS_RIP_DIR}/iRODS/scripts/perl/utils_platform.pl
 
-    cd ./irods-legacy/iRODS
-    ./irodssetup < ../../config/irodssetup.in
+    cd ${IRODS_RIP_DIR}/iRODS
+    ./irodssetup < ${BUILD_DIR}/config/irodssetup.in
     ./irodsctl stop
 
     # Rebuild with -fPIC for libRodsAPI.a
