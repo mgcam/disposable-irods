@@ -4,7 +4,7 @@ set -e -x
 
 BUILD_DIR=${BUILD_DIR:=$PWD}
 
-IRODS_VERSION=${IRODS_VERSION:=4.1.9}
+IRODS_VERSION=${IRODS_VERSION:=4.1.10}
 IRODS_RIP_DIR=${IRODS_RIP_DIR:=/usr/local/irods}
 
 configure_common() {
@@ -29,7 +29,7 @@ configure_3_3_1() {
     iadmin asq 'select alias,sqlStr from R_SPECIFIC_QUERY where alias = ?' findQueryByAlias
 }
 
-configure_4_1_x() {
+configure_4_x() {
     sudo -E -u postgres createuser -D -R -S irods
     sudo -E -u postgres createdb -O irods ICAT
     sudo -E -u postgres sh -c "echo \"ALTER USER irods WITH PASSWORD 'irods'\" | psql"
@@ -66,9 +66,9 @@ case $IRODS_VERSION in
         configure_3_3_1
         ;;
 
-    4.1.9)
+    4.*)
         configure_common
-        configure_4_1_x
+        configure_4_x
         ;;
 
     *)

@@ -5,7 +5,8 @@ set -e -x
 BUILD_DIR=${BUILD_DIR:=$PWD}
 
 ARCH=${ARCH:=x86_64}
-IRODS_VERSION=${IRODS_VERSION:=4.1.9}
+IRODS_VERSION=${IRODS_VERSION:=4.1.10}
+PG_PLUGIN_VERSION=${PG_PLUGIN_VERSION:=1.10}
 IRODS_RIP_DIR=${IRODS_RIP_DIR:=/usr/local/irods}
 
 PGHOME=${PGHOME:=/usr/lib/postgresql}
@@ -37,7 +38,7 @@ install_3_3_1() {
     make
 }
 
-install_4_1_x() {
+install_4_x() {
     sudo apt-get install -qq python-psutil python-requests
     sudo apt-get install -qq python-sphinx
     sudo apt-get install super libjson-perl jq
@@ -54,9 +55,9 @@ case $IRODS_VERSION in
         install_3_3_1
         ;;
 
-    4.1.9)
+    4.*)
         install_common
-        install_4_1_x
+        install_4_x
         ;;
 
     *)
