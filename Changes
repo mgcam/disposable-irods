@@ -1,7 +1,13 @@
+Releasd 1.2
+
+ -  Make iRODS 4.1.10 the default. Support multiple iRODS 4.1.x versions.
+
+ -  Use curl instead of wget because it allows to use a file:// URL to get
+    packages.
 
 Release 1.1
 
- -  iRODS 3.x may be relocated at install time by setting IRODS_RIP_DIR
+ -  iRODS 3.x may be relocated at install time by setting IRODS_RIP_DIR.
 
 
 Release 1.0
