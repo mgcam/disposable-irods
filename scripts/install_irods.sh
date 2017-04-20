@@ -5,6 +5,8 @@ set -e -x
 BUILD_DIR=${BUILD_DIR:=$PWD}
 
 ARCH=${ARCH:=x86_64}
+PLATFORM=${PLATFORM:=ubuntu12}
+
 IRODS_VERSION=${IRODS_VERSION:=4.1.10}
 PG_PLUGIN_VERSION=${PG_PLUGIN_VERSION:=1.10}
 IRODS_RIP_DIR=${IRODS_RIP_DIR:=/usr/local/irods}
@@ -13,7 +15,7 @@ PGHOME=${PGHOME:=/usr/lib/postgresql}
 PGVERSION=${PGVERSION:=9.3}
 
 install_common() {
-    sudo apt-get install -qq odbc-postgresql unixodbc-dev
+    sudo apt-get install -q -y postgresql-client odbc-postgresql unixodbc-dev
 }
 
 install_3_3_1() {
@@ -39,9 +41,10 @@ install_3_3_1() {
 }
 
 install_4_x() {
-    sudo apt-get install -qq python-psutil python-requests
-    sudo apt-get install -qq python-sphinx
-    sudo apt-get install super libjson-perl jq
+    sudo apt-get install -q -y libssl-dev
+    sudo apt-get install -q -y python-pip python-psutil python-requests
+    sudo apt-get install -q -y python-sphinx
+    sudo apt-get install -q -y super libjson-perl jq
     sudo -H pip install jsonschema
 
     sudo dpkg -i irods-icat-${IRODS_VERSION}-${PLATFORM}-${ARCH}.deb irods-database-plugin-postgres-${PG_PLUGIN_VERSION}-${PLATFORM}-${ARCH}.deb
