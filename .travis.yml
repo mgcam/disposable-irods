@@ -1,6 +1,8 @@
 
 sudo: required
 
+dist: precise
+
 language:
   bash
 
@@ -9,7 +11,6 @@ addons:
 
 env:
   global:
-    - secure: ACntIsRfIxvzwHp8Dyb3RU1vipgTQsGq14kWJTwRzVs6KZ9wAdM1k4iv4sFkyMjDg7RumP4iNVQCHcY7tR/P+5z5qUqq/sN2tpJN9sDTVDCvQ3hHEGmtoYrVmajt/bjj/JxMDp2CYoQ6wUcujvQioKjPcdZiOFzUnpQ22QD6MvrSnAWTy9UI3kIIP0sPcoZha4REy42ruwC7ZsiLsbFbnjeTknjtWt+mnZihWdK+f661MrQnGzGCwM80g9bkQqqYTNy4P/4LkRtWfPAhzHS1ymPK424DSSz3kJCWN5VCnpIa822AgvONHu62ILFVyrXvmZoWYcWhB5m0tolzdkE+dxhdvzT9Syx6KdLC3HvnMGQ6/MzdkhXkogQqcNytUJUYpqNZygwaFFbEEz/EcVnILxNpTESlEhO92WZPxbc4fCVCQeWPku3kEleUsnjrwekNk+vOIW6xzZZVMmr1tW2wQUPekUgagHkHuFqfpFBCvQ3/zBrQRUkOEw8EZHBz5sPLvATadK5Ij1Syzyn6ehaX4VRWAiQOMPAYKdmjgRODy6d1ZaA7WfiohGuvsZTT961fBW5jVHWDk09t2uHixfYJRVwtPnvRPQO575IaHbxrnMco7qSlsdD0yC0ve8B0sRW/m11aMwXlCbrQ/Xyu6fBzADxl5v84Q28J3E4hbU+H2bE=
     - PGVERSION="9.3"
     - RENCI_FTP_URL=ftp://ftp.renci.org
     - WTSI_NPG_GITHUB_URL=https://github.com/wtsi-npg
@@ -18,8 +19,14 @@ env:
     - IRODS_VERSION=3.3.1 IRODS_RIP_DIR=/usr/local/irods
     - IRODS_VERSION=4.1.9 PG_PLUGIN_VERSION=1.9 PLATFORM=ubuntu12
     - IRODS_VERSION=4.1.10 PG_PLUGIN_VERSION=1.10 PLATFORM=ubuntu12
+    - IRODS_VERSION=4.2.2
 
 before_install:
+  # workaround for iRODS buffer overflow
+  # see https://github.com/travis-ci/travis-ci/issues/5227
+  - sudo hostname "$(hostname | cut -c1-63)"
+  - sed -e "s/^\\(127\\.0\\.0\\.1.*\\)/\\1 $(hostname | cut -c1-63)/" /etc/hosts > /tmp/hosts
+  - sudo mv /tmp/hosts /etc/hosts
   - ./scripts/download_and_verify_irods.sh
 
 install:
@@ -33,21 +40,3 @@ script:
   - ienv
   - ilsresc -l
   - ils
-
-after_success:
-  - export DIST_FILE=/tmp/disposable-irods-${TRAVIS_TAG}.tar.gz
-  - ln -s $TRAVIS_BUILD_DIR /tmp/disposable-irods-${TRAVIS_TAG}
-  - cd /tmp
-  - tar -c -f ${DIST_FILE} -z -h --exclude ./.git --exclude .travis.yml --exclude '*.deb' disposable-irods-${TRAVIS_TAG}
-  - export SHA256_FILE=$DIST_FILE.sha256
-  - shasum -a 256 $DIST_FILE > $SHA256_FILE
-
-deploy:
-  provider: releases
-  api_key: $GH_OAUTH
-  file:
-    - $DIST_FILE
-    - $SHA256_FILE
-  skip_cleanup: true
-  on:
-    tags: true

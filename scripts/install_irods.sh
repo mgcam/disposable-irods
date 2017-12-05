@@ -15,7 +15,7 @@ PGHOME=${PGHOME:=/usr/lib/postgresql}
 PGVERSION=${PGVERSION:=9.3}
 
 install_common() {
-    sudo apt-get install -q -y postgresql-client odbc-postgresql unixodbc-dev
+    sudo apt-get install -y -q postgresql-client odbc-postgresql unixodbc-dev
 }
 
 install_3_3_1() {
@@ -40,15 +40,21 @@ install_3_3_1() {
     make
 }
 
-install_4_x() {
-    sudo apt-get install -q -y libssl-dev
-    sudo apt-get install -q -y python-pip python-psutil python-requests
-    sudo apt-get install -q -y python-sphinx
-    sudo apt-get install -q -y super libjson-perl jq
+install_4_1_x() {
+    sudo apt-get install -y -q libssl-dev
+    sudo apt-get install -y -q python-pip python-psutil python-requests
+    sudo apt-get install -y -q python-sphinx
+    sudo apt-get install -y -q super libjson-perl jq
     sudo -H pip install jsonschema
 
     sudo dpkg -i irods-icat-${IRODS_VERSION}-${PLATFORM}-${ARCH}.deb irods-database-plugin-postgres-${PG_PLUGIN_VERSION}-${PLATFORM}-${ARCH}.deb
     sudo dpkg -i irods-runtime-${IRODS_VERSION}-${PLATFORM}-${ARCH}.deb irods-dev-${IRODS_VERSION}-${PLATFORM}-${ARCH}.deb
+}
+
+install_4_2_x() {
+    sudo apt-get install -y -q irods-server irods-database-plugin-postgres
+    sudo apt-get install -y -q irods-icommands
+    sudo apt-get install -y -q irods-dev
 }
 
 case $IRODS_VERSION in
@@ -58,11 +64,15 @@ case $IRODS_VERSION in
         install_3_3_1
         ;;
 
-    4.*)
+    4.1.*)
         install_common
-        install_4_x
+        install_4_1_x
         ;;
 
+    4.2.*)
+        install_common
+        install_4_2_x
+        ;;
     *)
         echo Unknown iRODS version $IRODS_VERSION
         exit 1
