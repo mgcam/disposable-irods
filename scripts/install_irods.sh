@@ -55,6 +55,7 @@ install_4_2_x() {
     sudo apt-get install -y -q irods-server irods-database-plugin-postgres
     sudo apt-get install -y -q irods-icommands
     sudo apt-get install -y -q irods-dev
+    sudo apt-get install -y -q libssl-dev
 }
 
 case $IRODS_VERSION in
