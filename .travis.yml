@@ -12,7 +12,7 @@ addons:
 env:
   global:
     - PGVERSION="9.3"
-    - RENCI_FTP_URL=ftp://ftp.renci.org
+    # Use the default RENCI_FTP_URL
     - WTSI_NPG_GITHUB_URL=https://github.com/wtsi-npg
 
   matrix:

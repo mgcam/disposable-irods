@@ -11,7 +11,7 @@ IRODS_VERSION=${IRODS_VERSION:=4.1.10}
 PG_PLUGIN_VERSION=${PG_PLUGIN_VERSION:=1.10}
 IRODS_RIP_DIR=${IRODS_RIP_DIR:=/usr/local/irods}
 
-RENCI_FTP_URL=${RENCI_FTP_URL:=ftp://ftp.renci.org}
+RENCI_FTP_URL=${RENCI_FTP_URL:=https://dnap.cog.sanger.ac.uk}
 RENCI_PKG_URL=${RENCI_PKG_URL:=https://packages.irods.org}
 WTSI_NPG_GITHUB_URL=${WTSI_NPG_GITHUB_URL:=https://github.com/wtsi-npg}
 WTSI_NPG_GITHUB_REPO=${WTSI_NPG_GITHUB_REPO:=irods-legacy-gclp}

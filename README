@@ -74,4 +74,4 @@ PLATFORM             The RENCI name for the host platform:
                      ubuntu12 (default)
 
 RENCI_FTP_URL        The RENCI FTP site:
-                     ftp://ftp.renci.org (default)
+                     ftp://ftp.renci.org (defaults now to https://dnap.cog.sanger.ac.uk)
