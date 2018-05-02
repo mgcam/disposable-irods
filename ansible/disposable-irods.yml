@@ -1,0 +1,39 @@
+---
+- name: Disposable iRODS
+  hosts: disposable
+  remote_user: ubuntu
+  become: yes
+  vars:
+    cloud: zeta
+
+  tasks:
+    - name: Replace /etc/hosts
+      template:
+        src: templates/hosts.j2
+        dest: /etc/hosts
+
+    - name: Update packages
+      apt:
+        update_cache: yes
+
+    - name: Install iRODS 4.1.x package dependencies
+      apt:
+        name: "{{ item }}"
+        state: present
+      with_items:
+        - jq
+        - libjson-perl
+        - odbc-postgresql
+        - openssl
+        - python2.7
+        - python-jsonschema
+        - python-psutil
+        - python-requests
+        - super
+        - unixodbc
+        
+    - include_role:
+        name: postgresql
+
+    - include_role:
+        name: irods

@@ -1,0 +1,110 @@
+- name: Uninstall any installed iRODS packages
+  command:
+    dpkg --purge irods-icat irods-database-plugin-postgres irods-runtime irods-dev
+
+# Leaving this user in place prevents idempotence of setup_irods.sh below
+- name: Remove any existing irods service user
+  user:
+    name: irods
+    state: absent
+    remove: yes
+
+- name: Cleanup previous service user config
+  file:
+    path: /etc/irods/service_account.config
+    state: absent
+        
+- name: Download iRODS packages
+  get_url:
+    url: "{{ irods_package_url }}/pub/irods/releases/{{ irods_version }}/{{ irods_dist }}/{{ item.file }}"
+    sha256sum: "{{ item.sha256sum }}"
+    dest: "/tmp/{{ item.file }}"
+  with_items:
+    "{{ irods_packages }}"
+
+- name: Install iRODS 4.1.x packages
+  command:
+    dpkg -i "{{ item.file }}"
+  args:
+    chdir: /tmp
+  with_items:
+    "{{ irods_packages }}"
+
+- name: Create setup responses
+  template:
+    src: templates/setup_irods.in.j2
+    dest: /var/lib/irods/setup_irods.in
+
+- name: Copy server config delta
+  copy:
+    src: server_config.delta
+    dest: /var/lib/irods/server_config.delta
+    
+- name: Configure iRODS server
+  shell:
+    /var/lib/irods/packaging/setup_irods.sh < /var/lib/irods/setup_irods.in
+
+- name: Post-configure iRODS server
+  shell:
+    jq -f /var/lib/irods/server_config.delta /etc/irods/server_config.json > server_config.tmp && mv server_config.tmp /etc/irods/server_config.json
+
+# The Ansible 'service' module fails to stop or start this
+# service, so resort to calling init directly.
+- name: Restart the iRODS service
+  command:
+    /etc/init.d/irods restart
+
+- name: Create a new test vault directory
+  file:
+    path: "{{ test_vault_path }}"
+    owner: irods
+    group: irods
+    state: directory
+    mode: 0700
+
+- name: Configure the test vault
+  become: yes
+  become_user: irods
+  shell:
+     iadmin lr unixfs | grep resc_name || iadmin mkresc unixfs unixfilesystem `hostname --fqdn`:{{ test_vault_path }}
+     iadmin lr testResc | grep resc_name || iadmin mkresc testResc replication
+     ilsresc testResc | grep unixfs || iadmin addchildtoresc testResc unixfs
+
+- name: Create a new iRODS admin user
+  become: yes
+  become_user: irods
+  shell:
+    iadmin lu | grep {{ irods_user }} || iadmin mkuser {{ irods_user }} rodsadmin
+
+- name: Set new iRODS admin user password
+  become: yes
+  become_user: irods
+  command:
+    iadmin moduser {{ irods_user }} password {{ irods_password }}
+
+- name: Make a $HOME/.irods directory
+  file:
+    path: "/home/{{ ansible_user }}/.irods"
+    owner: "{{ ansible_user }}"
+    group: "{{ ansible_user }}"
+    state: directory
+    mode: 0700
+
+- name: Set up an iRODS environment
+  template:
+    src: templates/irods_environment.json.j2
+    dest: "/home/{{ ansible_user }}/.irods/irods_environment.json"
+    owner: "{{ ansible_user }}"
+    group: "{{ ansible_user }}"
+
+- name: Initialise native auth
+  become: yes
+  become_user: ubuntu
+  shell:
+    echo {{ irods_password }} | script -q -c "iinit"
+
+- name: Check local login
+  become: yes
+  become_user: ubuntu
+  command:
+    ils

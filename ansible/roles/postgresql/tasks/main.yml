@@ -1,0 +1,39 @@
+- name: Install PostgreSQL
+  apt:
+    name: "{{ item }}"
+    state: present
+  with_items:
+    - "postgresql-{{ postgresql_version }}"
+    - libpq-dev
+    - python3-psycopg2
+
+- name: Configure PostgreSQL to allow only local users
+  copy:
+    src: files/pg_hba.conf
+    dest: "/etc/postgresql/{{ postgresql_version }}/main/pg_hba.conf"
+
+- name: Restart PostgreSQL
+  service:
+    name: postgresql
+    state: restarted
+
+- name: Create iRODS PostgreSQL user
+  postgresql_user:
+    name: irods
+    password: irods
+    role_attr_flags: NOSUPERUSER,NOCREATEROLE,NOCREATEDB
+    state: present
+
+- name: Create iRODS PostgreSQL ICAT database
+  postgresql_db:
+    name: "{{ icat_database }}"
+    state: present
+
+- name: Grant ALL ICAT database privileges to irods role
+  postgresql_privs:
+    database: postgres
+    privs: ALL
+    obj: "{{ icat_database }}"
+    type: database
+    role: irods
+    state: present
