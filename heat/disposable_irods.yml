@@ -1,0 +1,86 @@
+description: 'Deployment for disposable iRODS server'
+heat_template_version: '2017-09-01'
+parameters:
+  flavor:
+    default: m1.tiny
+    description: "The Nova flavor to use for the instance"
+    type: string
+
+  image:
+    default: Xenial
+    description: "Name or ID of the Glance image registered for the instance"
+    type: string
+
+  floating_network:
+    default: public
+    description: "Name or ID of (public) network from which to obtain floating IP"
+    type: string
+
+  instance_network:
+    description: "Name or ID of instance Neutron network"
+    type: string
+
+  instance_security_groups:
+    description: "Names or IDs of security groups for the instance network"
+    type: comma_delimited_list
+
+resources:
+  instance_port:
+    type: OS::Neutron::Port
+    properties:
+      network: {get_param: instance_network}
+      security_groups: {get_param: instance_security_groups}
+
+  floating_ip:
+    description: "Floating IP Address to access the instance"
+    type: OS::Neutron::FloatingIP
+    properties:
+      floating_network: {get_param: floating_network}
+      port_id: {get_resource: instance_port}
+
+  ssh_key:
+    description: "Auto-generated ssh key"
+    type: OS::Nova::KeyPair
+    properties:
+      name:
+        str_replace:
+          template:
+            __id__-private_access_key
+          params:
+            __id__: { get_param: "OS::stack_name" }
+      save_private_key: true
+ 
+  server_password:
+    type: OS::Heat::RandomString
+    properties:
+      length: 8
+
+  server:
+    type: OS::Nova::Server
+    properties:
+      key_name: { get_resource: ssh_key }
+      image: {get_param: image}
+      flavor: {get_param: flavor}
+      admin_pass: { get_attr: [ server_password, value ] }
+      networks: [{port: {get_resource: instance_port}}]
+
+outputs:
+  server_id:
+    description: "Openstack ID for the server"
+    value:
+      get_resource: server
+
+  instance_ip:
+    description: "Floating IP Address to access the server"
+    value:
+      get_attr: [ floating_ip, floating_ip_address ]
+
+  password:
+    description: "Instance user password (for console login)"
+    value:
+      get_attr: [ server_password, value ]
+
+  private_key:
+    description: "Instance user private key (for ssh login)"
+    value:
+      get_attr: [ssh_key, private_key]
