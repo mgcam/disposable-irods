@@ -1,0 +1,13 @@
+{
+    "irods_zone_name": "tempZone",
+    "irods_host": "{{ ansible_hostname }}",
+    "irods_port": 1247,
+    "irods_user_name": "{{ irods_user }}",
+    "irods_authentication_file": "/home/{{ ansible_user }}/.irods/irodsA",
+    "irods_home": "/tempZone/home/{{ irods_user }}",
+    "irods_default_resource": "demoResc",
+    "irods_default_hash_scheme": "MD5",
+    "irods_match_hash_policy": "strict",
+    "irods_transfer_buffer_size_for_parallel_transfer_in_megabytes": 4,
+    "irods_plugins_home": "{{ irods_plugin_path }}"
+}

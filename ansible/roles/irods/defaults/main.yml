@@ -1,0 +1,5 @@
+irods_user: ubuntu
+irods_password: test_pass
+irods_plugin_path: /var/lib/irods/plugins/
+vault_path: /var/lib/irods/iRODS/Vault
+test_vault_path: /var/lib/irods/iRODS/TestVault

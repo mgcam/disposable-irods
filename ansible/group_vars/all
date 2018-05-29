@@ -1,0 +1,14 @@
+# irods_package_url: https://dnap.cog.sanger.ac.uk
+irods_package_url: ftp://ftp.renci.org
+irods_dist: ubuntu12
+irods_version: "4.1.10"
+irods_pg_plugin_version: "1.10"
+irods_packages:
+  - file: "irods-icat-{{ irods_version }}-{{ irods_dist }}-x86_64.deb"
+    sha256sum: "6c50e6de9d45c0c3a01a057d75a9d3c4e278481326fa8d407099447115c94f3d"
+  - file: "irods-database-plugin-postgres-{{ irods_pg_plugin_version }}-{{ irods_dist }}-x86_64.deb"
+    sha256sum: "8e34a1fc2019322da30aaab0412208514e79a43e8845f201bf64c9c30b2ca84e"
+  - file: "irods-runtime-{{ irods_version }}-{{ irods_dist }}-x86_64.deb"
+    sha256sum: "2091733ada9bd7e9b06f469ce078c59d6e2ed99d506dcb1c26d6e42343602d1b"
+  - file: "irods-dev-{{ irods_version }}-{{ irods_dist }}-x86_64.deb"
+    sha256sum: "fc3d94af4c92a6c686fbeabfb1fb286983c4c3132b4e9b08e12710eaa5c5fe07"
