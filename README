@@ -11,12 +11,12 @@ running basic tests.
 Versions of iRODS supported:
 
    3.3.1 (run-in-place) - Built and installed from git a repository.
->= 4.1.9 (packaged)     - Installed from the official RENCI FTP site.
+>= 4.1.10 (packaged)     - Installed from the official RENCI FTP site.
 
 A version 3.3.1 installation will be in local directory owned by the
 current user. WARNING! The installation script supplied with iRODS
 3.3.1 will make modifications to that user's $HOME/.odbc.ini. A
-version >= 4.1.9 installation will be in the location defined by the
+version >= 4.1.10 installation will be in the location defined by the
 package.
 
 In all cases the current user will have been given an active rodsamin
@@ -30,7 +30,7 @@ automatically at install time. These are
            ${IRODS_RIP_DIR}/iRODS/TestVault (see below for the definition
            of 'IRODS_RIP_DIR').
 
->= 4.1.9 - a resource named 'testResc' with a vault at
+>= 4.1.10 - a resource named 'testResc' with a vault at
            /var/lib/irods/iRODS/TestVault
 
 
@@ -52,7 +52,7 @@ The scripts supplied are:
 
 
 The script behaviour may be modified by setting environment variables.
-The most important variable, relevant to both iRODS 3.3.1 and >= 4.1.9
+The most important variable, relevant to both iRODS 3.3.1 and >= 4.1.10
 is:
 
 IRODS_VERSION        The iRODS version to install:
@@ -65,7 +65,7 @@ IRODS_RIP_DIR        A directory to which the run-in-place install will
                      be relocated.
 
 
-Relevant to >= 4.1.9 packaged install only are:
+Relevant to >= 4.1.10 packaged install only are:
 
 PG_PLUGIN_VERSION    The iRODS PostgeSQL plugin version to install:
                      1.10 (default)

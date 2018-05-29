@@ -65,7 +65,7 @@
 - name: Configure the test vault
   become: yes
   become_user: irods
-  shell:
+  shell: |
      iadmin lr unixfs | grep resc_name || iadmin mkresc unixfs unixfilesystem `hostname --fqdn`:{{ test_vault_path }}
      iadmin lr testResc | grep resc_name || iadmin mkresc testResc replication
      ilsresc testResc | grep unixfs || iadmin addchildtoresc testResc unixfs
