@@ -16,9 +16,6 @@ RENCI_PKG_URL=${RENCI_PKG_URL:=https://packages.irods.org}
 WTSI_NPG_GITHUB_URL=${WTSI_NPG_GITHUB_URL:=https://github.com/wtsi-npg}
 WTSI_NPG_GITHUB_REPO=${WTSI_NPG_GITHUB_REPO:=irods-legacy-gclp}
 
-before_install_common() {
-}
-
 before_install_3_3_1() {
     sudo mkdir -p ${IRODS_RIP_DIR}
     sudo chown -R $USER:$USER ${IRODS_RIP_DIR}
@@ -50,17 +47,14 @@ before_install_4_2_x() {
 case $IRODS_VERSION in
 
     3.3.1)
-        before_install_common
         before_install_3_3_1
         ;;
 
     4.1.*)
-        before_install_common
         before_install_4_1_x
         ;;
 
     4.2.*)
-        before_install_common
         before_install_4_2_x
         ;;
     *)
