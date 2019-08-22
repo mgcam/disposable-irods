@@ -17,7 +17,6 @@ WTSI_NPG_GITHUB_URL=${WTSI_NPG_GITHUB_URL:=https://github.com/wtsi-npg}
 WTSI_NPG_GITHUB_REPO=${WTSI_NPG_GITHUB_REPO:=irods-legacy-gclp}
 
 before_install_common() {
-    #sudo apt-get update
 }
 
 before_install_3_3_1() {
